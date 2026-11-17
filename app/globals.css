@@ -1,0 +1,2631 @@
+@import "tailwindcss";
+
+/* The Jensen Times is a printed object: it looks the same in light and dark mode. */
+:root {
+  color-scheme: light;
+  --red: #d7262b;
+  --ink: #111;
+  --paper: #ecebe6;
+  --up: #3ddc6b;
+  --down: #ff4d4d;
+  /* up/down for text on paper, where the screen-bright pair is too light to read */
+  --up-ink: #11803a;
+  --down-ink: #c4161c;
+  --anton: var(--font-anton), Impact, "Arial Narrow", sans-serif;
+  --mont: var(--font-mont), "Helvetica Neue", Arial, sans-serif;
+  --pad: 16px;
+  --photo-pad: 16px;
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  /* matches the outer edge of the gray cover so overscroll / first paint is never paper-colored */
+  background: #1c1b1a;
+}
+
+body {
+  color: var(--ink);
+  font-family: var(--mont);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===================================================================
+   Disclaimer crawl: the one disclaimer, across the very top of the page
+   (see DisclaimerCrawl.tsx)
+   =================================================================== */
+
+:root {
+  --crawl-h: 30px;
+}
+
+.crawl {
+  position: relative;
+  z-index: 40;
+  height: var(--crawl-h);
+  overflow: hidden;
+  background: var(--red);
+  color: #fff;
+  border-bottom: 2px solid var(--ink);
+}
+
+.crawl__track {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.crawl__text {
+  flex: none;
+  animation: crawl 90s linear infinite;
+}
+
+.crawl__label {
+  margin-right: 0.8em;
+  padding: 2px 7px;
+  background: #fff;
+  color: var(--red);
+  font-weight: 900;
+}
+
+.crawl__sep {
+  margin: 0 1.4em;
+}
+
+@keyframes crawl {
+  to {
+    translate: -100% 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --crawl-h: clamp(30px, 3.2vh, 40px);
+  }
+
+  .crawl__track {
+    font-size: clamp(0.75rem, 0.75vw, 0.95rem);
+  }
+}
+
+/* ===================================================================
+   Base layout (phones and narrow screens): a stacked, scrolling cover
+   =================================================================== */
+
+.cover {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 100dvh;
+  padding: var(--pad);
+  /* The page starts as the gray photo backdrop; the paper bar slides in over it */
+  background: radial-gradient(ellipse at 70% 35%, #9a9996 0%, #55534f 45%, #1c1b1a 100%);
+  overflow: hidden;
+}
+
+/* Newsprint grain over everything */
+.cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--grain);
+  opacity: 0.32;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* Paper band holding the masthead + price box; slides in as one piece */
+.cover__top {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin: calc(var(--pad) * -1) calc(var(--pad) * -1) 0;
+  padding: var(--pad) var(--pad) 16px;
+  background: var(--paper);
+}
+
+/* ---------- Masthead ---------- */
+
+.masthead {
+  position: relative;
+  margin: calc(var(--pad) * -1) calc(var(--pad) * -1) 0;
+  padding: calc(var(--pad) + 8px) 14% 18px calc(var(--pad) + 6px);
+  background: var(--red);
+  color: #fff;
+  clip-path: polygon(0 0, 100% 0, 93% 100%, 0 100%);
+  font-style: italic;
+}
+
+.masthead__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  /* leave room on the right for the corner price */
+  padding-right: clamp(80px, 9vw, 150px);
+}
+
+.masthead__the {
+  margin: 0;
+  font-weight: 700;
+  font-size: clamp(1.5rem, 4.2vw, 2.6rem);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.masthead__title {
+  margin: 0;
+  font-weight: 900;
+  font-size: clamp(4.2rem, 14vw, 8.8rem);
+  line-height: 0.82;
+  letter-spacing: -0.045em;
+  transform: skewX(-6deg);
+  transform-origin: left;
+}
+
+.masthead__rule {
+  border: 0;
+  border-top: 3px solid #fff;
+  margin: 10px 0 8px;
+}
+
+.masthead__rule--short {
+  flex: 1;
+  min-width: 24px;
+  margin: 0 0 0.35em;
+}
+
+.masthead__meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin: 0;
+  font-weight: 700;
+  font-size: clamp(0.62rem, 1.1vw, 0.95rem);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.corner-price {
+  position: absolute;
+  top: 10px;
+  right: 9%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 2px 6px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1;
+  transition: background 0.3s, color 0.3s;
+}
+
+.corner-price__label {
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+}
+
+.corner-price__value {
+  font-size: clamp(0.95rem, 1.6vw, 1.6rem);
+  font-variant-numeric: tabular-nums;
+}
+
+.corner-price.flash-up {
+  background: var(--ink);
+  color: var(--up);
+}
+
+.corner-price.flash-down {
+  background: var(--ink);
+  color: var(--down);
+}
+
+/* ---------- BREAKING! box ---------- */
+
+.breaking {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 18px 12px;
+  background: #000;
+  color: #fff;
+  border: 3px solid var(--ink);
+  outline: 2px solid #fff;
+  outline-offset: -8px;
+  overflow: hidden;
+}
+
+.breaking p {
+  margin: 0;
+}
+
+.breaking__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.breaking__tag {
+  padding: 2px 10px;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 900;
+  font-size: clamp(0.85rem, 1.1vw, 1.1rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.breaking__logo {
+  display: block;
+  width: auto;
+  height: clamp(26px, 3.4vh, 42px);
+}
+
+.breaking__kicker {
+  font-family: var(--anton);
+  text-transform: uppercase;
+  font-size: clamp(1rem, 1.5vw, 1.5rem);
+  line-height: 1.05;
+}
+
+.breaking__kicker--big {
+  font-size: clamp(1.5rem, 2.4vw, 2.4rem);
+}
+
+.breaking__price {
+  font-family: var(--anton);
+  font-size: clamp(2.6rem, min(4.6vw, 8vh), 5.6rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.3s;
+}
+
+.breaking__price.flash-up {
+  color: var(--up);
+}
+
+.breaking__price.flash-down {
+  color: var(--down);
+}
+
+.breaking__change {
+  font-family: var(--anton);
+  font-size: clamp(1.1rem, 1.7vw, 1.8rem);
+  font-variant-numeric: tabular-nums;
+}
+
+.breaking__change.up {
+  color: var(--up);
+}
+
+.breaking__change.down {
+  color: var(--down);
+}
+
+.breaking__range {
+  font-weight: 700;
+  font-style: italic;
+  font-size: clamp(0.7rem, 0.8vw, 0.85rem);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+  font-variant-numeric: tabular-nums;
+}
+
+.breaking__chart {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.sparkline {
+  position: relative;
+  height: 44px;
+  margin-top: 6px;
+  color: #fff;
+}
+
+.sparkline svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* The chart is clipped by this rect, which grows left to right: the line "draws" itself. */
+.sparkline__reveal {
+  transform-box: fill-box;
+  transform-origin: left center;
+  scale: 0 1;
+}
+
+.sparkline[data-animate] .sparkline__reveal {
+  animation: spark-draw 1.4s cubic-bezier(0.22, 0.8, 0.3, 1) 0.2s forwards;
+}
+
+/* Latest price: pops in when the line arrives, then breathes */
+.sparkline__dot {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  border-radius: 50%;
+  background: var(--spark-color);
+  box-shadow: 0 0 0 2px #000;
+  opacity: 0;
+  scale: 0;
+  pointer-events: none;
+}
+
+.sparkline__dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--spark-color);
+  opacity: 0;
+}
+
+.sparkline[data-animate] .sparkline__dot {
+  animation: spark-dot 0.35s cubic-bezier(0.3, 1.6, 0.5, 1) 1.5s forwards;
+}
+
+.sparkline[data-animate] .sparkline__dot::after {
+  animation: spark-ping 2s ease-out 1.9s infinite;
+}
+
+@keyframes spark-draw {
+  to {
+    scale: 1 1;
+  }
+}
+
+@keyframes spark-dot {
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes spark-ping {
+  0% {
+    opacity: 0.6;
+    scale: 1;
+  }
+  100% {
+    opacity: 0;
+    scale: 3;
+  }
+}
+
+/* ---------- Photo area ---------- */
+
+.cover__photo {
+  position: relative;
+  display: flex;
+  flex-direction: column-reverse; /* photo first, story under it */
+  gap: 12px;
+  margin: 0 calc(var(--pad) * -1);
+  padding: var(--photo-pad);
+  background: transparent;
+  overflow: hidden;
+}
+
+.story {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hero {
+  position: relative;
+  z-index: 1;
+}
+
+.hero__frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 577 / 433;
+}
+
+.hero__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: grayscale(1) contrast(1.3) brightness(1.04);
+}
+
+/* Halftone dots, masked to the cutout's silhouette */
+.hero__halftone {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.4) 0.9px, transparent 1.5px) 0 0 / 4px 4px;
+  mix-blend-mode: multiply;
+  -webkit-mask: url("/jensen-cutout.png") center / 100% 100% no-repeat;
+  mask: url("/jensen-cutout.png") center / 100% 100% no-repeat;
+}
+
+/* ---------- Headline counter ---------- */
+
+.headline {
+  margin: 0;
+  font-weight: 400;
+}
+
+.headline__kicker {
+  display: inline-block;
+  padding: 4px 14px;
+  background: #fff;
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  font-family: var(--mont);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(0.85rem, min(1.5vw, 2.6vh), 1.6rem);
+  text-transform: uppercase;
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.headline__row {
+  display: flex;
+  align-items: center;
+  gap: 0.15em;
+  margin-top: 8px;
+  font-family: var(--anton);
+  text-transform: uppercase;
+  color: #fff;
+  -webkit-text-stroke: 0.035em var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 0.05em 0.05em 0 var(--ink);
+}
+
+.headline__digit {
+  display: inline-flex;
+  justify-content: center;
+  min-width: 0.6em;
+  font-size: clamp(8rem, 30vw, 18rem);
+  line-height: 0.85;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Odometer ---------- */
+
+/* Each wheel is a window taller than the 0.85em line so stroke + shadow aren't clipped,
+   pulled back with negative margins so the layout is unchanged. */
+.odo {
+  --odo-h: 1.15em;
+  display: block;
+  height: var(--odo-h);
+  margin: calc((0.85em - var(--odo-h)) / 2) -0.08em;
+  padding: 0 0.08em;
+  overflow: hidden;
+}
+
+.odo__strip {
+  display: flex;
+  flex-direction: column;
+  transition: transform 1300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.odo__strip > span {
+  display: block;
+  height: var(--odo-h);
+  line-height: var(--odo-h);
+}
+
+.odo__strip.is-rolled {
+  transform: translateY(calc((var(--rows) - 1) * var(--odo-h) * -1));
+}
+
+.headline__digit.is-landed {
+  animation: odo-settle 380ms cubic-bezier(0.3, 0, 0.3, 1);
+}
+
+/* A soft press as the wheel locks in */
+@keyframes odo-settle {
+  40% {
+    transform: scale(1.06);
+  }
+}
+
+.headline__words {
+  font-size: clamp(3.2rem, 12vw, 7.6rem);
+  line-height: 0.92;
+}
+
+/* ---------- Starburst ---------- */
+
+.starburst {
+  position: relative;
+  align-self: flex-end;
+  width: clamp(150px, 13vw, 260px);
+  aspect-ratio: 100 / 62;
+  margin-bottom: -8px;
+  transform: rotate(-11deg);
+}
+
+.starburst svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: var(--ink);
+  filter: drop-shadow(3px 3px 0 rgba(255, 255, 255, 0.25));
+}
+
+.starburst span {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: #fff;
+  font-family: var(--anton);
+  font-size: clamp(0.85rem, 1.15vw, 1.45rem);
+  line-height: 1.05;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* ---------- Bottom strip ---------- */
+
+/* Phones: the stacked cover must show the scandal tally on the first screen.
+   The story wrapper is flattened so its pieces can be reordered: tally first,
+   then the photo, with the sticker overlapping the jacket (not on its own
+   row), then the subhead. DOM order is unchanged. Desktop (1024+) is untouched. */
+@media (max-width: 1023.98px) {
+  .cover__photo {
+    flex-direction: column; /* base is column-reverse; order below sets the sequence */
+    gap: 12px;
+  }
+
+  .story {
+    display: contents;
+  }
+
+  .headline {
+    position: relative;
+    z-index: 3;
+    order: 1;
+  }
+
+  .hero {
+    order: 2;
+  }
+
+  .starburst {
+    position: relative;
+    z-index: 3;
+    order: 3;
+    width: clamp(112px, 34vw, 150px);
+    margin-top: calc(clamp(112px, 34vw, 150px) * -0.62 - 12px);
+    margin-bottom: -6px;
+  }
+
+  .cover__bottom {
+    position: relative;
+    z-index: 3;
+    order: 4;
+  }
+}
+
+.cover__bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+}
+
+.subhead {
+  margin: 0;
+  padding: 12px 20px;
+  background: rgba(17, 17, 17, 0.88);
+  color: #fff;
+  outline: 2px solid #fff;
+  outline-offset: -7px;
+  font-weight: 700;
+  font-style: italic;
+  font-size: clamp(0.95rem, min(1.5vw, 2.6vh), 1.7rem);
+  line-height: 1.2;
+}
+
+.subhead strong {
+  font-weight: 900;
+}
+
+.barcode {
+  flex: none;
+  align-self: flex-end;
+  width: 120px;
+  padding: 6px 8px 8px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.barcode__digits {
+  display: block;
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.barcode svg {
+  display: block;
+  width: 100%;
+  height: 52px;
+  fill: var(--ink);
+}
+
+/* ===================================================================
+   Desktop: one full-screen cover, no scrolling (designed at 1920×1080)
+   =================================================================== */
+
+@media (min-width: 1024px) {
+  :root {
+    --pad: clamp(18px, 1.6vw, 36px);
+    --photo-pad: clamp(18px, 1.8vw, 40px);
+  }
+
+  .cover {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0;
+    height: calc(100dvh - var(--crawl-h));
+    padding-bottom: 0;
+    min-height: 560px;
+  }
+
+  .cover__top {
+    grid-template-columns: 1.15fr 1fr;
+    gap: clamp(16px, 1.6vw, 32px);
+    align-items: stretch;
+    padding-bottom: clamp(12px, 1.6vh, 24px);
+  }
+
+  .masthead {
+    margin: calc(var(--pad) * -1) 0 0 calc(var(--pad) * -1);
+    padding: calc(var(--pad) + 6px) 15% clamp(14px, 2vh, 26px) calc(var(--pad) + 8px);
+    clip-path: polygon(0 0, 100% 0, 87% 100%, 0 100%);
+  }
+
+  .masthead__the {
+    font-size: clamp(1.6rem, min(2.4vw, 4.4vh), 3.2rem);
+  }
+
+  .masthead__title {
+    font-size: clamp(4rem, min(8.4vw, 15vh), 10.5rem);
+  }
+
+  .corner-price {
+    top: calc(var(--pad) - 2px);
+    right: 15%;
+  }
+
+  /* Price details on the left, chart filling the right */
+  .breaking {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    column-gap: clamp(16px, 2vw, 40px);
+    padding: clamp(14px, 2vh, 24px) clamp(16px, 1.4vw, 28px);
+  }
+
+  .breaking__head {
+    grid-column: 1 / -1;
+  }
+
+  .breaking__info {
+    align-self: center;
+  }
+
+  .breaking__chart {
+    justify-content: center;
+  }
+
+  .sparkline {
+    height: clamp(60px, 11vh, 140px);
+  }
+
+  /* Photo area: story on the left, Jensen on the right. Nothing overlaps him. */
+  .cover__photo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(16px, 2vw, 40px);
+    margin: 0 calc(var(--pad) * -1);
+    padding-bottom: 0;
+    min-height: 0;
+  }
+
+  .story {
+    grid-column: 1;
+    grid-row: 1;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: clamp(8px, 1.4vh, 20px);
+    min-height: 0;
+    padding-bottom: var(--photo-pad);
+  }
+
+  .starburst {
+    justify-self: end;
+    align-self: start;
+    margin: 0;
+  }
+
+  .headline {
+    align-self: center;
+    margin-block: clamp(12px, 2vh, 28px) clamp(20px, 3.4vh, 48px);
+  }
+
+  .headline__row {
+    margin-top: clamp(20px, 3.4vh, 44px);
+  }
+
+  /* Sized by both width and height so it fits 1920×1080 and smaller screens */
+  .headline__digit {
+    font-size: clamp(6rem, min(16vw, 25vh), 22rem);
+  }
+
+  .headline__words {
+    font-size: clamp(2.6rem, min(7vw, 10.8vh), 9.5rem);
+  }
+
+  .cover__bottom {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .barcode {
+    width: clamp(110px, 8vw, 160px);
+  }
+
+  .barcode svg {
+    height: clamp(44px, 6vh, 72px);
+  }
+
+  /* Jensen fills the right half and stands on the bottom edge */
+  .hero {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-height: 0;
+    container-type: size;
+  }
+
+  .hero__frame {
+    width: min(100cqw, 100cqh * 577 / 433);
+  }
+
+}
+
+.poweredby {
+  margin: 28px auto 0;
+  color: #6b6863;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+@media (min-width: 1024px) {
+  .poweredby {
+    margin-top: clamp(16px, 3vh, 32px);
+    font-size: clamp(0.65rem, 0.7vw, 0.8rem);
+  }
+}
+
+/* ===================================================================
+   Page 2: the scandal ribbon (see ScandalRibbon.tsx)
+   =================================================================== */
+
+.ribbon {
+  position: relative;
+  padding: 56px var(--pad) 36px;
+  background: var(--paper);
+  overflow-x: clip;
+}
+
+.ribbon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--grain);
+  opacity: 0.32;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.ribbon__head {
+  text-align: center;
+  transition:
+    translate 600ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 400ms ease;
+}
+
+.ribbon__title {
+  margin: 0;
+  font-family: var(--anton);
+  font-weight: 400;
+  font-size: clamp(2.8rem, 13vw, 4.5rem);
+  line-height: 0.92;
+  text-transform: uppercase;
+}
+
+.ribbon__title span {
+  color: var(--red);
+}
+
+
+/* ---- The tape ---- */
+
+.ribbon__stage {
+  margin-top: 44px;
+}
+
+.ribbon__band {
+  position: relative;
+  margin: 0 calc(var(--pad) * -1 - 24px);
+  padding: 22px calc(var(--pad) + 24px);
+  background: var(--red);
+  border-block: 6px solid var(--ink);
+  box-shadow: 0 10px 0 rgba(0, 0, 0, 0.16);
+  color: #fff;
+  rotate: -2deg;
+  overflow: hidden;
+  transition:
+    translate 750ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 300ms ease;
+}
+
+.ribbon__ticker {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  font-family: var(--anton);
+  font-size: 4.5rem;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.13);
+  pointer-events: none;
+}
+
+.ribbon__ticker > span {
+  flex: none;
+  padding-right: 0.3em;
+  animation: ribbon-tick 60s linear infinite;
+}
+
+@keyframes ribbon-tick {
+  to {
+    translate: -100% 0;
+  }
+}
+
+.ribbon__counts {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px 28px;
+}
+
+.ribbon__group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ribbon__count {
+  font-family: var(--anton);
+  font-size: 7.5rem;
+  line-height: 0.82;
+  color: #fff;
+  text-shadow: 5px 5px 0 var(--ink);
+}
+
+.ribbon__group--alleged .ribbon__count {
+  color: var(--ink);
+  text-shadow: 5px 5px 0 #fff;
+}
+
+.ribbon__label {
+  margin: 0;
+  font-family: var(--anton);
+  font-weight: 400;
+  font-size: 1.7rem;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.ribbon__divider {
+  display: none;
+  font-size: 2.4rem;
+  color: var(--ink);
+}
+
+.ribbon__tokens {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ribbon__token {
+  display: grid;
+  place-content: center;
+  width: 62px;
+  height: 62px;
+  padding: 0;
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  cursor: pointer;
+  rotate: -4deg;
+  transition:
+    scale 180ms cubic-bezier(0.2, 1.6, 0.4, 1),
+    rotate 180ms cubic-bezier(0.2, 1.6, 0.4, 1),
+    background-color 120ms ease;
+}
+
+.ribbon__item:nth-child(2) .ribbon__token {
+  rotate: 5deg;
+}
+
+.ribbon__token--admitted {
+  border-color: var(--paper);
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.45);
+}
+
+.ribbon__token.is-active {
+  scale: 1.14;
+  rotate: -9deg;
+  background: #ffd400;
+  color: var(--ink);
+}
+
+/* Hover only where hover exists, so a tap on touch doesn't leave the stamp stuck */
+@media (hover: hover) {
+  .ribbon__token:hover {
+    scale: 1.14;
+    rotate: -9deg;
+    background: #ffd400;
+    color: var(--ink);
+  }
+}
+
+.ribbon__token:focus-visible {
+  outline: 3px dashed #fff;
+  outline-offset: 4px;
+}
+
+.ribbon__token-no {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.ribbon__token-n {
+  font-family: var(--anton);
+  font-size: 1.9rem;
+  line-height: 0.95;
+}
+
+/* ---- The dossier cards ---- */
+
+.ribbon__panel {
+  position: relative;
+  margin-top: 34px;
+}
+
+.dossier {
+  position: relative;
+  display: none;
+  /* The portrait is a full-height column: it stretches to match the text */
+  grid-template-columns: clamp(124px, 40%, 190px) minmax(0, 1fr);
+  gap: 16px;
+  padding: 14px;
+  background: #fbfaf6;
+  border: 3px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+  rotate: -0.6deg;
+}
+
+.dossier.is-active {
+  display: grid;
+}
+
+.dossier__photo {
+  position: relative;
+  align-self: stretch;
+  min-height: 220px;
+  border: 2px solid var(--ink);
+  overflow: hidden;
+  background: #bbb8b1;
+}
+
+.dossier__img {
+  object-fit: cover;
+  object-position: var(--focus, 50% 25%);
+  filter: grayscale(1) contrast(1.1);
+}
+
+.dossier__credit {
+  position: absolute;
+  top: 4px;
+  left: 5px;
+  right: 5px;
+  font-size: 0.52rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fff;
+  text-shadow: 0 0 2px #000;
+}
+
+.silhouette {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Inside a card the silhouette fills the stretched portrait column */
+.dossier__photo .silhouette {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+}
+
+.silhouette__qm {
+  font-family: var(--anton);
+  font-size: 18px;
+  fill: rgba(0, 0, 0, 0.35);
+}
+
+.silhouette__bar {
+  position: absolute;
+  top: 34%;
+  left: -10%;
+  right: -10%;
+  padding: 3px 0 2px;
+  background: var(--red);
+  color: #fff;
+  font-family: var(--mont);
+  font-size: clamp(0.6rem, 2.6vw, 0.8rem);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  rotate: -8deg;
+}
+
+.dossier__no {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 3px 0 2px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--anton);
+  font-size: 1.15rem;
+  text-align: center;
+}
+
+.dossier__body {
+  min-width: 0;
+}
+
+.dossier__stamp {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  padding: 1px 8px;
+  border: 3px solid currentColor;
+  color: var(--red);
+  font-family: var(--anton);
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  rotate: 9deg;
+  opacity: 0.88;
+}
+
+.dossier--alleged .dossier__stamp {
+  color: var(--ink);
+}
+
+.dossier__name {
+  margin: 0;
+  padding-right: 96px;
+  font-family: var(--anton);
+  font-weight: 400;
+  font-size: 1.6rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.dossier__role {
+  margin: 4px 0 8px;
+  color: #55524d;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.dossier__summary {
+  margin: 0 0 8px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.38;
+}
+
+.dossier__response {
+  margin: 0 0 8px;
+  padding-left: 9px;
+  border-left: 3px solid var(--red);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-style: italic;
+  line-height: 1.35;
+}
+
+.dossier__sources {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.dossier__sources a {
+  color: var(--red);
+}
+
+.dossier__nophoto {
+  color: #6b6863;
+  font-weight: 600;
+}
+
+@media (max-width: 420px) {
+  .dossier {
+    grid-template-columns: 40% minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .dossier__name {
+    padding-right: 0;
+    margin-top: 26px;
+  }
+}
+
+/* ---- Desktop: a full-screen second page; cards float under their stamp ---- */
+
+@media (min-width: 1024px) {
+  .ribbon {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100dvh;
+    padding: clamp(40px, 6vh, 80px) var(--pad) clamp(20px, 3vh, 36px);
+  }
+
+  .ribbon__title {
+    font-size: clamp(4.5rem, 7.2vw, 8.5rem);
+  }
+
+
+  .ribbon__stage {
+    margin-top: clamp(36px, 6vh, 72px);
+  }
+
+  .ribbon__band {
+    padding-block: clamp(18px, 2.6vh, 34px);
+  }
+
+  .ribbon__ticker {
+    font-size: clamp(6rem, 9vw, 11rem);
+  }
+
+  .ribbon__counts {
+    flex-wrap: nowrap;
+    gap: clamp(32px, 5vw, 96px);
+  }
+
+  .ribbon__group {
+    gap: clamp(16px, 1.6vw, 28px);
+  }
+
+  .ribbon__count {
+    font-size: clamp(10rem, 15vw, 17rem);
+    text-shadow: 8px 8px 0 var(--ink);
+  }
+
+  .ribbon__group--alleged .ribbon__count {
+    text-shadow: 8px 8px 0 #fff;
+  }
+
+  .ribbon__label {
+    font-size: clamp(2.4rem, 3.4vw, 4rem);
+  }
+
+  .ribbon__divider {
+    display: block;
+    font-size: clamp(3rem, 4vw, 5rem);
+  }
+
+  .ribbon__tokens {
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .ribbon__token {
+    width: clamp(70px, 5vw, 92px);
+    height: clamp(70px, 5vw, 92px);
+  }
+
+  .ribbon__token-no {
+    font-size: 0.7rem;
+  }
+
+  .ribbon__token-n {
+    font-size: clamp(2.2rem, 2.6vw, 3rem);
+  }
+
+  .ribbon__panel {
+    --card-w: min(800px, 100%);
+    /* Less than a card's height: an open card hangs into the page's bottom margin
+       instead of leaving a big empty gap under the tape */
+    height: 140px;
+    margin-top: 28px;
+  }
+
+  .dossier {
+    position: absolute;
+    top: 0;
+    left: var(--card-left, 0px);
+    display: grid;
+    width: var(--card-w);
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 22px;
+    padding: 18px;
+    opacity: 0;
+    translate: 0 -12px;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 140ms ease,
+      translate 200ms cubic-bezier(0.2, 1.4, 0.4, 1),
+      visibility 0s linear 140ms;
+  }
+
+  .dossier.is-active {
+    opacity: 1;
+    translate: 0 0;
+    visibility: visible;
+    pointer-events: auto;
+    transition:
+      opacity 140ms ease,
+      translate 200ms cubic-bezier(0.2, 1.4, 0.4, 1);
+  }
+
+  /* little pointer up to the stamp */
+  .dossier::before {
+    content: "";
+    position: absolute;
+    top: -14px;
+    left: calc(var(--arrow-x, 50%) - 12px);
+    width: 0;
+    height: 0;
+    border: 12px solid transparent;
+    border-top: 0;
+    border-bottom: 14px solid var(--ink);
+  }
+
+  .dossier__name {
+    font-size: 2rem;
+  }
+
+  .dossier__summary {
+    font-size: 0.95rem;
+  }
+
+}
+
+/* ---- Scroll-in reveal (data-inview is only set by JS, and only below the fold) ---- */
+
+.ribbon[data-inview="false"] .ribbon__head {
+  translate: 0 24px;
+  opacity: 0;
+}
+
+.ribbon[data-inview="false"] .ribbon__band {
+  translate: -105% 0;
+  opacity: 0;
+}
+
+/* ===================================================================
+   Page 3: the money pages (see MarketPage.tsx / MarketBoard.tsx)
+   =================================================================== */
+
+.market {
+  position: relative;
+  padding: 48px var(--pad) 36px;
+  background: var(--paper);
+  overflow-x: clip;
+}
+
+.market::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--grain);
+  opacity: 0.32;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.market__head {
+  text-align: center;
+  transition:
+    translate 600ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 400ms ease;
+}
+
+.market__title {
+  margin: 0;
+  font-family: var(--anton);
+  font-weight: 400;
+  font-size: clamp(2.8rem, 13vw, 4.5rem);
+  line-height: 0.92;
+  text-transform: uppercase;
+}
+
+.market__title span {
+  color: var(--red);
+}
+
+
+.market__body {
+  display: grid;
+  gap: 32px;
+  max-width: 1600px;
+  margin: 32px auto 0;
+  transition:
+    translate 700ms cubic-bezier(0.2, 0.8, 0.2, 1) 120ms,
+    opacity 400ms ease 120ms;
+}
+
+.market .up {
+  color: var(--up);
+}
+
+.market .down {
+  color: var(--down);
+}
+
+/* ---- The black ticker board ---- */
+
+.market__board {
+  min-width: 0;
+  padding: 18px 16px 16px;
+  background: #000;
+  color: #fff;
+  border: 3px solid var(--ink);
+  outline: 2px solid #fff;
+  outline-offset: -8px;
+  box-shadow: 8px 8px 0 var(--red);
+}
+
+.market__quote {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+
+.market__ticker {
+  align-self: center;
+  padding: 2px 8px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.market__price {
+  font-family: var(--anton);
+  font-size: clamp(2.4rem, 11vw, 3.4rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.3s;
+}
+
+.market__price.flash-up {
+  color: var(--up);
+}
+
+.market__price.flash-down {
+  color: var(--down);
+}
+
+.market__change {
+  font-family: var(--anton);
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.market__asof {
+  flex-basis: 100%;
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.market__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin: 14px 0 8px;
+}
+
+.market__tabs {
+  display: flex;
+  border: 2px solid #fff;
+}
+
+.market__tab {
+  position: relative;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font: 800 0.8rem var(--mont);
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.market__tab + .market__tab {
+  border-left: 2px solid #fff;
+}
+
+.market__tab:hover:not([aria-selected="true"]) {
+  background: rgb(255 255 255 / 0.15);
+}
+
+.market__tab[aria-selected="true"] {
+  background: #fff;
+  color: var(--ink);
+}
+
+.market__tab:focus-visible {
+  z-index: 1;
+  outline: 3px solid var(--red);
+  outline-offset: 2px;
+}
+
+.market__range-change {
+  margin: 0;
+  font-family: var(--anton);
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.market__range-change span {
+  color: #fff;
+  font-family: var(--mont);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+/* ---- Chart ---- */
+
+.market__chart {
+  --pin-row-h: 26px;
+  padding-top: calc(var(--pin-rows, 0) * var(--pin-row-h) + 8px);
+}
+
+.market__canvas {
+  position: relative;
+  height: 240px;
+  margin: 0 52px 26px 0;
+  touch-action: pan-y;
+  cursor: crosshair;
+}
+
+.market__canvas svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.market__grid {
+  stroke: rgb(255 255 255 / 0.14);
+  stroke-width: 1;
+}
+
+.market__base {
+  stroke: #fff;
+  stroke-opacity: 0.55;
+  stroke-width: 1.5;
+  stroke-dasharray: 2 4;
+}
+
+.market__line {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.market__pin-line {
+  stroke: var(--red);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+
+.market__axis-y span,
+.market__axis-x span {
+  position: absolute;
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.market__axis-y span {
+  left: calc(100% + 8px);
+  translate: 0 -50%;
+}
+
+.market__axis-x span {
+  top: calc(100% + 6px);
+  translate: -50% 0;
+  text-transform: uppercase;
+}
+
+.market__axis-x .is-minor {
+  display: none;
+}
+
+/* Smallest phones: the plot is ~220px wide, so tighten the date labels */
+@media (max-width: 360px) {
+  .market__axis-x span {
+    font-size: 0.6rem;
+    letter-spacing: -0.01em;
+  }
+}
+
+.market__pin,
+.market__pin-num {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--red);
+  color: #fff;
+  font-family: var(--anton);
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.market__pin {
+  position: absolute;
+  bottom: calc(100% + 2px + var(--row, 0) * var(--pin-row-h));
+  translate: -50% 0;
+  rotate: -8deg;
+  pointer-events: none;
+}
+
+.market__pin-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--red);
+  translate: -50% -50%;
+  pointer-events: none;
+}
+
+.market__hover {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1px solid rgb(255 255 255 / 0.6);
+  pointer-events: none;
+}
+
+.market__hover-dot {
+  position: absolute;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #000;
+  border-radius: 50%;
+  translate: -50% -50%;
+}
+
+.market__tip {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  z-index: 2;
+  display: grid;
+  gap: 1px;
+  padding: 6px 9px;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 3px 3px 0 var(--red);
+  white-space: nowrap;
+  translate: -50% 0;
+}
+
+.market__tip.is-left {
+  translate: calc(-100% - 10px) 0;
+}
+
+.market__tip.is-right {
+  translate: 10px 0;
+}
+
+.market__tip strong {
+  font-family: var(--anton);
+  font-weight: 400;
+  font-size: 1.1rem;
+  line-height: 1.1;
+}
+
+.market__tip span {
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.market__tip .up {
+  color: var(--up-ink);
+}
+
+.market__tip .down {
+  color: var(--down-ink);
+}
+
+.market__tip time {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.market__legend-base {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.market__legend-base span {
+  width: 22px;
+  border-top: 2px dotted #fff;
+}
+
+.market__pins {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 12px 0 0;
+  border-top: 2px solid rgb(255 255 255 / 0.3);
+  list-style: none;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.market__pin-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.market__pin-num {
+  flex: none;
+}
+
+.market__pin-item time {
+  font-family: var(--anton);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.market__pin-src {
+  font-style: italic;
+  opacity: 0.85;
+}
+
+.market__pin-src a {
+  color: #fff;
+  text-decoration: underline;
+  text-decoration-color: var(--red);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.market__pin-src a:hover {
+  color: var(--down);
+}
+
+.market__pin-src a:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 2px;
+}
+
+.market__chart--empty {
+  display: grid;
+  place-items: center;
+  height: 240px;
+  font-family: var(--anton);
+  font-size: 1.4rem;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* ---- The Damage Report + report card (on paper) ---- */
+
+.market__stats,
+.market__report {
+  min-width: 0;
+}
+
+.market__stats-title {
+  margin: 0;
+  padding-bottom: 6px;
+  border-bottom: 6px solid var(--ink);
+  font-family: var(--anton);
+  font-weight: 400;
+  font-size: 2.2rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.market__stats-title span {
+  color: var(--red);
+}
+
+.market__stat-list {
+  margin: 0;
+}
+
+.market__stat {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  padding: 10px 0;
+  border-bottom: 2px solid var(--ink);
+}
+
+.market__stat-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.market__stat-value {
+  margin: 0;
+  font-family: var(--anton);
+  font-size: 1.7rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.market__stat-gloss {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.market__report-title {
+  display: inline-block;
+  margin: 0 0 8px;
+  padding: 4px 10px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.market__report-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  border: 3px solid var(--ink);
+  background: var(--ink);
+  list-style: none;
+}
+
+.market__grade {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--paper);
+}
+
+.market__grade-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.market__grade-value {
+  font-family: var(--anton);
+  font-size: 2rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.market .market__grade-value.up {
+  color: var(--up-ink);
+}
+
+.market .market__grade-value.down {
+  color: var(--down-ink);
+}
+
+@media (min-width: 1024px) {
+  .market {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100dvh;
+    padding: clamp(32px, 4.5vh, 72px) clamp(32px, 4vw, 80px) clamp(16px, 2.5vh, 32px);
+  }
+
+  .market__title {
+    font-size: clamp(4.5rem, 7.2vw, 8.5rem);
+  }
+
+
+  .market__body {
+    grid-template-columns: minmax(0, 7fr) minmax(300px, 3fr);
+    grid-template-areas:
+      "board stats"
+      "board report";
+    grid-template-rows: auto 1fr;
+    align-items: start;
+    gap: clamp(24px, 3vh, 40px) clamp(32px, 3.5vw, 72px);
+    width: 100%;
+    margin-top: clamp(20px, 3vh, 48px);
+  }
+
+  .market__board {
+    grid-area: board;
+    padding: clamp(20px, 2.6vh, 32px) clamp(24px, 2vw, 40px);
+    box-shadow: 12px 12px 0 var(--red);
+  }
+
+  .market__stats {
+    grid-area: stats;
+  }
+
+  .market__report {
+    grid-area: report;
+  }
+
+  .market__price {
+    font-size: clamp(3rem, 4vw, 5rem);
+  }
+
+  .market__change {
+    font-size: clamp(1.2rem, 1.5vw, 1.8rem);
+  }
+
+  .market__canvas {
+    height: clamp(240px, 26vh, 420px);
+    margin-right: 64px;
+  }
+
+  .market__axis-y span,
+  .market__axis-x span {
+    font-size: clamp(0.7rem, 0.65vw, 0.8rem);
+  }
+
+  .market__axis-x .is-minor {
+    display: block;
+  }
+
+  .market__pins {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    column-gap: 24px;
+    font-size: clamp(0.78rem, 0.75vw, 0.9rem);
+  }
+
+  .market__stats-title {
+    font-size: clamp(2.2rem, 2.6vw, 3.2rem);
+  }
+
+  .market__stat {
+    padding: clamp(6px, 0.9vh, 12px) 0;
+  }
+
+  .market__grade {
+    padding: clamp(6px, 0.9vh, 12px) 12px;
+  }
+
+  .market__stat-value {
+    font-size: clamp(1.6rem, 1.8vw, 2.3rem);
+  }
+
+  .market__stat-gloss {
+    font-size: clamp(0.75rem, 0.72vw, 0.88rem);
+  }
+
+  .market__grade-value {
+    font-size: clamp(1.7rem, 1.9vw, 2.4rem);
+  }
+
+}
+
+/* ---- Scroll-in reveal (data-inview is only set by JS, and only below the fold) ---- */
+
+.market[data-inview="false"] .market__head {
+  translate: 0 24px;
+  opacity: 0;
+}
+
+.market[data-inview="false"] .market__body {
+  translate: 0 40px;
+  opacity: 0;
+}
+
+/* ===================================================================
+   Page 4: headlines off the news wire (see Headlines.tsx)
+   =================================================================== */
+
+.wire {
+  position: relative;
+  padding: 48px var(--pad) 36px;
+  background: var(--paper);
+  overflow-x: clip;
+}
+
+.wire::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--grain);
+  opacity: 0.32;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.wire__head {
+  text-align: center;
+  transition:
+    translate 600ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 400ms ease;
+}
+
+.wire__title {
+  margin: 0;
+  font-family: var(--anton);
+  font-weight: 400;
+  font-size: clamp(2.8rem, 13vw, 4.5rem);
+  line-height: 0.92;
+  text-transform: uppercase;
+}
+
+.wire__title span {
+  color: var(--red);
+}
+
+
+.wire__grid {
+  display: grid;
+  gap: 28px;
+  max-width: 1600px;
+  margin: 36px auto 0;
+  transition:
+    translate 700ms cubic-bezier(0.2, 0.8, 0.2, 1) 120ms,
+    opacity 400ms ease 120ms;
+}
+
+.wire a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.wire a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 0.06em;
+  text-underline-offset: 0.12em;
+}
+
+.wire a:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 3px;
+}
+
+.wire__meta {
+  margin: 0 0 6px;
+  color: #55524d;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* The lead story: a black box with a red flag, like a cover's main splash */
+.wire__lead {
+  position: relative;
+  padding: 26px 20px 22px;
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 8px 8px 0 var(--red);
+  rotate: -0.8deg;
+}
+
+.wire__lead .wire__meta {
+  color: #b9b6ae;
+}
+
+.wire__flag {
+  position: absolute;
+  top: -14px;
+  left: 16px;
+  padding: 2px 10px;
+  background: var(--red);
+  color: #fff;
+  font-family: var(--anton);
+  font-size: 1.1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  rotate: -3deg;
+}
+
+.wire__lead-headline {
+  margin: 0;
+  font-family: var(--anton);
+  font-weight: 400;
+  font-size: clamp(2rem, 9vw, 3rem);
+  line-height: 0.98;
+  text-transform: uppercase;
+}
+
+.wire__lead-summary {
+  display: -webkit-box;
+  margin: 14px 0 0;
+  overflow: hidden;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+}
+
+.wire__list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wire__item {
+  padding: 14px 0;
+  border-top: 2px solid var(--ink);
+}
+
+.wire__item:last-child {
+  border-bottom: 2px solid var(--ink);
+}
+
+.wire__headline {
+  margin: 0;
+  font-family: var(--anton);
+  font-weight: 400;
+  font-size: 1.45rem;
+  line-height: 1.02;
+  text-transform: uppercase;
+}
+
+.wire__down {
+  max-width: 40ch;
+  margin: 36px auto 0;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* ---- Desktop: a full-screen third page; the lead story on the left, two columns of briefs ---- */
+
+@media (min-width: 1024px) {
+  .wire {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100dvh;
+    padding: clamp(40px, 6vh, 80px) clamp(32px, 4vw, 80px) clamp(20px, 3vh, 36px);
+  }
+
+  .wire__title {
+    font-size: clamp(4.5rem, 7.2vw, 8.5rem);
+  }
+
+
+  .wire__grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: start;
+    gap: clamp(32px, 3.5vw, 72px);
+    width: 100%;
+    margin-top: clamp(32px, 5vh, 64px);
+  }
+
+  .wire__lead {
+    padding: clamp(32px, 4vh, 48px) clamp(24px, 2vw, 40px) clamp(24px, 3vh, 36px);
+    box-shadow: 12px 12px 0 var(--red);
+  }
+
+  .wire__lead-headline {
+    font-size: clamp(2.6rem, 3.4vw, 4.2rem);
+  }
+
+  .wire__lead-summary {
+    font-size: clamp(0.9rem, 0.95vw, 1.1rem);
+  }
+
+  .wire__list {
+    grid-template-columns: 1fr 1fr;
+    column-gap: clamp(24px, 2.5vw, 48px);
+  }
+
+  .wire__item:nth-last-child(-n + 2) {
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .wire__item {
+    padding: clamp(10px, 1.6vh, 18px) 0;
+  }
+
+  .wire__headline {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: clamp(1.3rem, 1.45vw, 1.8rem);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+
+  .wire__meta {
+    font-size: clamp(0.65rem, 0.62vw, 0.78rem);
+  }
+
+}
+
+/* ---- Hover preview card (see WirePreview.tsx) ---- */
+
+.wire-preview__anchor {
+  display: contents;
+}
+
+.wire-preview {
+  position: fixed;
+  z-index: 100;
+  width: min(360px, calc(100vw - 32px));
+  overflow: hidden;
+  background: #fff;
+  border: 3px solid var(--ink);
+  box-shadow: 8px 8px 0 var(--red);
+  color: var(--ink);
+  pointer-events: none;
+  opacity: 0;
+  translate: 0 6px;
+  transition:
+    opacity 120ms ease,
+    translate 180ms cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+.wire-preview.is-above {
+  translate: 0 -6px;
+}
+
+.wire-preview.is-visible {
+  opacity: 1;
+  translate: 0 0;
+}
+
+.wire-preview__img {
+  aspect-ratio: 16 / 9;
+  border-bottom: 3px solid var(--ink);
+  background: #bbb8b1;
+}
+
+.wire-preview__img img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wire-preview__body {
+  padding: 12px 14px 14px;
+}
+
+.wire-preview__site {
+  margin: 0 0 6px;
+  color: var(--red);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.wire-preview__site span {
+  color: #6b6863;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.wire-preview__title {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.wire-preview__desc {
+  display: -webkit-box;
+  margin: 6px 0 0;
+  overflow: hidden;
+  color: #44423e;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.wire-preview__status {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.wire-preview__status strong {
+  font-family: var(--anton);
+  font-size: 1.2rem;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+/* ---- Scroll-in reveal (data-inview is only set by JS, and only below the fold) ---- */
+
+.wire[data-inview="false"] .wire__head {
+  translate: 0 24px;
+  opacity: 0;
+}
+
+.wire[data-inview="false"] .wire__grid {
+  translate: 0 40px;
+  opacity: 0;
+}
+
+/* ===================================================================
+   Site-wide loading gate (see PageGate.tsx): until everything is loaded,
+   only the cover's gray backdrop shows and the page can't scroll.
+   Scripting-only, so the page still prints without JavaScript.
+   =================================================================== */
+
+@media (scripting: enabled) {
+  html:has(.site:not([data-ready])) {
+    overflow: hidden;
+  }
+
+  .site:not([data-ready]) > :not(.cover, .crawl) {
+    visibility: hidden;
+  }
+}
+
+/* ===================================================================
+   Landing intro (driven by data-intro on .cover, see CoverIntro.tsx)
+   pending → shell → stamp → text
+   =================================================================== */
+
+html,
+body {
+  overflow-x: clip;
+}
+
+/* Jensen sits on the page like a sticker */
+.hero__frame {
+  transform-origin: 50% 60%;
+  filter: drop-shadow(4px 6px 0 rgba(0, 0, 0, 0.35));
+  /* The photo is cropped flat at the bottom/right; don't let the shadow draw a hard edge there */
+  clip-path: inset(-100px 0 0 -100px);
+}
+
+.cover:is([data-intro="pending"], [data-intro="shell"]) .hero__frame {
+  opacity: 0;
+}
+
+/* Let the oversized sticker fall in from above the page without being clipped */
+.cover[data-intro="stamp"],
+.cover[data-intro="stamp"] .cover__photo {
+  overflow: visible;
+}
+
+.cover[data-intro="stamp"] .hero {
+  z-index: 30;
+}
+
+.cover:is([data-intro="shell"], [data-intro="stamp"]) .hero__frame {
+  will-change: transform, opacity;
+}
+
+/* ---- Wave 1: the whole top bar slides in from the left ---- */
+
+.cover__top {
+  transition: translate 450ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.cover[data-intro="pending"] .cover__top {
+  translate: -100% 0;
+}
+
+/* ---- Wave 2: the headline, right after the stamp lands ---- */
+
+.headline__kicker {
+  transition:
+    translate 260ms cubic-bezier(0.2, 1.4, 0.4, 1),
+    rotate 260ms cubic-bezier(0.2, 1.4, 0.4, 1),
+    opacity 120ms ease;
+}
+
+.headline__digit {
+  transition: opacity 200ms ease;
+}
+
+.headline__words {
+  transition:
+    scale 300ms cubic-bezier(0.2, 1.7, 0.4, 1) 120ms,
+    opacity 120ms ease 120ms;
+}
+
+.cover__bottom {
+  transition:
+    translate 350ms cubic-bezier(0.2, 0.8, 0.2, 1) 200ms,
+    opacity 250ms ease 200ms;
+}
+
+.starburst {
+  transition:
+    scale 350ms cubic-bezier(0.2, 1.8, 0.4, 1) 350ms,
+    opacity 150ms ease 350ms;
+}
+
+.cover:not([data-intro="text"]) .headline__kicker {
+  translate: -120% 0;
+  rotate: -6deg;
+  opacity: 0;
+}
+
+.cover:not([data-intro="text"]) .headline__digit {
+  opacity: 0;
+}
+
+.cover:not([data-intro="text"]) .headline__words {
+  scale: 1.6;
+  opacity: 0;
+}
+
+.cover:not([data-intro="text"]) .starburst {
+  scale: 0;
+  opacity: 0;
+}
+
+.cover:not([data-intro="text"]) .cover__bottom {
+  translate: 0 30px;
+  opacity: 0;
+}
+
+/* No JavaScript: skip the intro entirely */
+@media (scripting: none) {
+  .cover[data-intro] :is(.cover__top, .hero__frame, .headline__kicker, .headline__digit, .headline__words, .starburst, .cover__bottom) {
+    translate: none !important;
+    scale: none !important;
+    rotate: none !important;
+    opacity: 1 !important;
+  }
+
+  .odo__strip {
+    transform: translateY(calc((var(--rows) - 1) * var(--odo-h) * -1));
+  }
+
+  .sparkline__reveal {
+    scale: none !important;
+  }
+
+  .sparkline__dot {
+    opacity: 1 !important;
+    scale: none !important;
+  }
+
+  /* Ribbon: no reveal, and every dossier is printed out in a stack */
+  .ribbon :is(.ribbon__head, .ribbon__band) {
+    translate: none !important;
+    opacity: 1 !important;
+  }
+
+  .wire :is(.wire__head, .wire__grid) {
+    translate: none !important;
+    opacity: 1 !important;
+  }
+
+  .market :is(.market__head, .market__body) {
+    translate: none !important;
+    opacity: 1 !important;
+  }
+
+  .ribbon__panel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+    gap: 24px;
+    height: auto !important;
+  }
+
+  .dossier {
+    position: relative !important;
+    left: auto !important;
+    display: grid !important;
+    width: auto !important;
+    grid-template-columns: clamp(118px, 36%, 200px) minmax(0, 1fr);
+    opacity: 1 !important;
+    translate: none !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  .dossier::before {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .headline__digit.is-landed {
+    animation: none;
+  }
+
+  .ribbon__ticker > span {
+    animation: none;
+  }
+
+  /* The crawl stops and simply prints the disclaimer */
+  .crawl {
+    height: auto;
+  }
+
+  .crawl__track {
+    padding-block: 6px;
+    white-space: normal;
+  }
+
+  .crawl__text {
+    flex: auto;
+    animation: none;
+    padding-inline: var(--pad);
+  }
+
+  .crawl__text--dup,
+  .crawl__sep {
+    display: none;
+  }
+
+  .sparkline[data-animate] .sparkline__reveal,
+  .sparkline[data-animate] .sparkline__dot,
+  .sparkline[data-animate] .sparkline__dot::after {
+    animation: none;
+  }
+
+  .sparkline__reveal {
+    scale: none;
+  }
+
+  .sparkline__dot {
+    opacity: 1;
+    scale: none;
+  }
+
+  .ribbon__head,
+  .ribbon__band,
+  .market__head,
+  .market__body,
+  .wire__head,
+  .wire__grid,
+  .wire-preview,
+  .ribbon__token,
+  .dossier,
+  .odo__strip,
+  .cover__top,
+  .headline__kicker,
+  .headline__digit,
+  .headline__words,
+  .starburst,
+  .cover__bottom {
+    transition: none !important;
+  }
+}
