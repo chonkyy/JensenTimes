@@ -2574,24 +2574,26 @@ body {
     animation: none;
   }
 
-  /* The crawl stops and simply prints the disclaimer */
+  /* The crawl stops moving but stays one line tall; the strip scrolls by hand */
   .crawl {
-    height: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  .crawl::-webkit-scrollbar {
+    display: none;
   }
 
   .crawl__track {
-    padding-block: 6px;
-    white-space: normal;
+    width: max-content;
   }
 
   .crawl__text {
-    flex: auto;
     animation: none;
-    padding-inline: var(--pad);
   }
 
-  .crawl__text--dup,
-  .crawl__sep {
+  .crawl__text--dup {
     display: none;
   }
 
